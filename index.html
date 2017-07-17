@@ -1,3 +1,8 @@
+<!--
+    https://naereen.github.io/worldtour_timeline/
+    MIT License, by Lilian Besson (@Naereen)
+    https://github.com/Naereen/worldtour_timeline/
+-->
 <!doctype html>
 <html lang="en">
 	<head>
@@ -19,6 +24,7 @@
         <script type="text/javascript" src="js/d3/d3.v3.min.js"></script>
         <script type="text/javascript" src="js/d3/queue.v1.min.js"></script>
         <script type="text/javascript" src="js/d3/topojson.v1.min.js"></script>
+        <script type="text/javascript" src="js/mousetrap.min.js"></script>
 	</head>
 	<body>
         <!-- <h1>World tour</h1> -->
@@ -31,8 +37,7 @@
             Please enable javascript or download a more recent web browser to view this animation.
         </noscript>
         <script type="text/javascript">
-
-            var size = Math.trunc(0.75 * Math.min(window.innerHeight, window.innerWidth));
+            var size = Math.trunc(0.85 * Math.min(window.innerHeight, window.innerWidth));
             var width = size,
                 height = size;
 
@@ -57,8 +62,8 @@
             var comment = container.parentElement.querySelector('#comment');
 
             queue()
-                .defer(d3.json, 'js/d3/world-110m.json')
-                .defer(d3.csv,  'js/d3/my-countries-in-order.csv')
+                .defer(d3.json, 'data/world-110m.json')
+                .defer(d3.csv,  'data/my-countries-in-order.csv')
                 .await(ready);
 
             function ready(error, world, names) {
@@ -89,9 +94,9 @@
 
                 var nb = countries.length;
 
-                (function transition() {
+                function transition() {
                     d3.transition()
-                        .duration(1000)
+                        .duration(3000)
                         .each('start', function() {
                             while ( !countries[i = (i + 1) % n] ) { };
                             legend.innerHTML = (countries[i].name);
@@ -112,18 +117,21 @@
                     })
                     .transition()
                     .each('end', transition);
-                    })();
-                }
+                    };
+                transition();
+
+                Mousetrap.bind('space', transition);
+            };
 
             d3.select(self.frameElement).style('height', height + 'px');
             // Done
         </script>
         <p id="thanks">
+            🔨 Made by <a href="https://GitHub.com/Naereen">Lilian Besson (@Naereen)</a>,
+            ✨ publically released under the <a href="https://lbesson.mit-license.org/">MIT license</a>.
+
             Based on <a href="http://bl.ocks.org/mbostock/4183330">World Tour</a>
             by <a href="http://bost.ocks.org/mike/">Mike Bostock</a>.
-
-            Made by <a href="https://GitHub.com/Naereen">Lilian Besson (@Naereen)</a>,
-            publically released under the <a href="https://lbesson.mit-license.org/">MIT license</a>.
         </p>
     </body>
 </html>

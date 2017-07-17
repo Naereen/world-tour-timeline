@@ -1,10 +1,17 @@
+/*
+  https://naereen.github.io/worldtour_timeline/
+  MIT License, by Lilian Besson (@Naereen)
+  https://github.com/Naereen/worldtour_timeline/
+*/
+/*@import url('//fonts.googleapis.com/css?family=Ubuntu');*/
 body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "Ubuntu", Tahoma, sans-serif;
     text-align: center;
-    width: 60%;
     margin-right: auto;
     margin-left: auto;
     margin: auto;
+    width: 70%;
 }
 
 canvas {
@@ -13,28 +20,30 @@ canvas {
     margin: auto;
 }
 
-h1 {
-    font-size: 36px;
-}
-
 #legend {
     position: relative;
-    font-size: 26px;
-    top: 50vh;
+    font-size: 2.3em;
+    top: 53vh;
 }
 
 #comment {
-    font-size: 24px;
-    width: 70vw;
+    font-size: 1.8em;
     position: absolute;
-    top: 10px;
     text-align: center;
+    top: 1vh;
     margin-right: auto;
     margin-left: auto;
     margin: auto;
+    width: 70%;
 }
 
 #thanks {
-    font-size: 18px;
+    font-size: 1.1em;
     font-style: italic;
+    position: absolute;
+    bottom: 1vh;
+    margin-right: auto;
+    margin-left: auto;
+    margin: auto;
+    width: 60%;
 }
