@@ -94,13 +94,17 @@
 
                 var nb = countries.length;
 
+                function updatetext(legend, comment, countries, i) {
+                    legend.innerHTML = (countries[i].name);
+                    comment.innerHTML = '#' + (i+1) + '/' + nb + ' : ' + (getData(countries[i]).comment);
+                };
+
                 function transition() {
                     d3.transition()
                         .duration(3000)
                         .each('start', function() {
                             while ( !countries[i = (i + 1) % n] ) { };
-                            legend.innerHTML = (countries[i].name);
-                            comment.innerHTML = '#' + (i+1) + '/' + nb + ' : ' + (getData(countries[i]).comment);
+                            updatetext(legend, comment, countries, i);
                         })
                         .tween('rotate', function() {
                             var p = d3.geo.centroid(countries[i]),
@@ -121,12 +125,20 @@
                 transition();
 
                 Mousetrap.bind('space', transition);
+                Mousetrap.bind('enter', transition);
+                Mousetrap.bind('left',  function() { i = (i - 1) % nb; i = ((i < 0) && (nb - 1) ) || i; updatetext(legend, comment, countries, i); } );
+                Mousetrap.bind('p',  function() { i = (i - 1) % nb; i = ((i < 0) && (nb - 1) ) || i; updatetext(legend, comment, countries, i); } );
+                Mousetrap.bind('right', transition);
+                Mousetrap.bind('n', transition);
             };
 
             d3.select(self.frameElement).style('height', height + 'px');
             // Done
         </script>
         <p id="thanks">
+            <span style="font-style:normal;">Press 'space' to go to the next country.</span>
+            <br>
+
             🔨 Made by <a href="https://GitHub.com/Naereen">Lilian Besson (@Naereen)</a>,
             ✨ publically released under the <a href="https://lbesson.mit-license.org/">MIT license</a>.
 
