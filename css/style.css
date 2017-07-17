@@ -1,0 +1,40 @@
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    text-align: center;
+    width: 60%;
+    margin-right: auto;
+    margin-left: auto;
+    margin: auto;
+}
+
+canvas {
+    margin-right: auto;
+    margin-left: auto;
+    margin: auto;
+}
+
+h1 {
+    font-size: 36px;
+}
+
+#legend {
+    position: relative;
+    font-size: 26px;
+    top: 50vh;
+}
+
+#comment {
+    font-size: 24px;
+    width: 70vw;
+    position: absolute;
+    top: 10px;
+    text-align: center;
+    margin-right: auto;
+    margin-left: auto;
+    margin: auto;
+}
+
+#thanks {
+    font-size: 18px;
+    font-style: italic;
+}

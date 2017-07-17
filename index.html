@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<meta name="author" content="Lilian Besson (@Naereen)">
+		<meta name="description" content="World Tour in a Time Line">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<title>World Tour in a Time Line</title>
+
+		<link type="text/css" rel="stylesheet" href="css/style.css">
+
+		<!--[if lt IE 9]>
+		    <script src="js/html5shiv.js"></script>
+		<![endif]-->
+        <script type="text/javascript" src="js/d3/d3.v3.min.js"></script>
+        <script type="text/javascript" src="js/d3/queue.v1.min.js"></script>
+        <script type="text/javascript" src="js/d3/topojson.v1.min.js"></script>
+	</head>
+	<body>
+        <!-- <h1>World tour</h1> -->
+        <h2 id="legend">Map is loading...</h2>
+        <h2 id="comment">When, for how long?</h2>
+        <noscript>
+            Warning: javascript seems to be disabled...
+            The map will not be available.
+
+            Please enable javascript or download a more recent web browser to view this animation.
+        </noscript>
+        <script type="text/javascript">
+
+            var size = Math.trunc(0.75 * Math.min(window.innerHeight, window.innerWidth));
+            var width = size,
+                height = size;
+
+            var canvas = d3.select("body").append("canvas")
+                .attr("width", width)
+                .attr("height", height);
+
+            var projection = d3.geo.orthographic()
+                .translate([width / 2, height / 2])
+                .scale(width / 2 - 50)
+                .clipAngle(90)
+                .precision(0.6);
+
+            var container = canvas.node();
+            var c = container.getContext('2d');
+
+            var path = d3.geo.path()
+                    .projection(projection)
+                    .context(c);
+
+            var legend = container.parentElement.querySelector('#legend');
+            var comment = container.parentElement.querySelector('#comment');
+
+            queue()
+                .defer(d3.json, 'js/d3/world-110m.json')
+                .defer(d3.csv,  'js/d3/my-countries-in-order.csv')
+                .await(ready);
+
+            function ready(error, world, names) {
+                if (error) throw error;
+
+                var globe = {type: 'Sphere'},
+                    land = topojson.feature(world, world.objects.land),
+                    countries = topojson.feature(world, world.objects.countries).features,
+                    borders = topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }),
+                    i = -1,
+                    n = countries.length;
+
+                function getData(a) {
+                    return names.find(function(x) {
+                        return (a.name == x.name);
+                    });
+                };
+
+                countries = countries.filter(function(d) {
+                    return names.some(function(x) {
+                        if (d.id == x.id) return d.name = x.name;
+                    });
+                }).sort(function(a, b) {
+                    var my_a = getData(a);
+                    var my_b = getData(b);
+                    return parseInt(my_a.number) - parseInt(my_b.number);
+                });
+
+                var nb = countries.length;
+
+                (function transition() {
+                    d3.transition()
+                        .duration(1000)
+                        .each('start', function() {
+                            while ( !countries[i = (i + 1) % n] ) { };
+                            legend.innerHTML = (countries[i].name);
+                            comment.innerHTML = '#' + (i+1) + '/' + nb + ' : ' + (getData(countries[i]).comment);
+                        })
+                        .tween('rotate', function() {
+                            var p = d3.geo.centroid(countries[i]),
+                                r = d3.interpolate(projection.rotate(), [-p[0], -p[1]]);
+                            return function(t) {
+                                projection.rotate(r(t));
+                                c.clearRect(0, 0, width, height);
+                                c.fillStyle = '#fff', c.lineWidth = 2, c.beginPath(), path(globe), c.fill();
+                                c.fillStyle = '#42affa', c.beginPath(), path(land), c.fill();
+                                c.fillStyle = '#f00', c.beginPath(), path(countries[i]), c.fill();
+                                c.strokeStyle = '#ccc', c.lineWidth = .5, c.beginPath(), path(borders), c.stroke();
+                                c.strokeStyle = '#ccc', c.lineWidth = 2, c.beginPath(), path(globe), c.stroke();
+                            };
+                    })
+                    .transition()
+                    .each('end', transition);
+                    })();
+                }
+
+            d3.select(self.frameElement).style('height', height + 'px');
+            // Done
+        </script>
+        <p id="thanks">
+            Based on <a href="http://bl.ocks.org/mbostock/4183330">World Tour</a>
+            by <a href="http://bost.ocks.org/mike/">Mike Bostock</a>.
+
+            Made by <a href="https://GitHub.com/Naereen">Lilian Besson (@Naereen)</a>,
+            publically released under the <a href="https://lbesson.mit-license.org/">MIT license</a>.
+        </p>
+    </body>
+</html>
