@@ -108,28 +108,38 @@
             });
 
             var nb = countries.length;
+            var lastli = undefined;
 
             function updatetext(legend, comment, countries, i) {
                 legend.innerHTML = (countries[i].name);
-                comment.innerHTML = '#' + (i + 1) + '/' + nb + ' : ' + (getData(countries[i]).comment);
+                var data = getData(countries[i]);
+                comment.innerHTML = '#' + (i + 1) + '/' + nb + ' : ' + data.comment;
+
+                if ((typeof(lastli) !== 'undefined')) {
+                    lastli.removeClass("active");
+                };
+                var li = $("#" + data.number);
+                li.addClass("active");
+                lastli = li;
             };
 
             NProgress.inc();
 
-            function nextIndex(i, nb) {
-                var j = i % nb;
+            function nextIndex(k, nb) {
+                var j = k % nb;
                 return ((j < 0) && (nb - 1)) || j;
             }
 
-            function transition(delta) {
-                if (typeof(delta) === 'undefined') {
+            function transition_fct(delta) {
+                if ((typeof(delta) === 'undefined') || (typeof(delta) !== 'number')) {
                     delta = 1;
                 };
+                console.log("delta =", delta); // DEBUG
                 NProgress.start();
                 d3.transition()
                     .duration(duration_of_animation)
                     .each('start', function() {
-                        while (!countries[i = (i + delta) % n]) {};
+                        while (!countries[i = nextIndex(i + delta, n)]) {};
                         updatetext(legend, comment, countries, i);
                         NProgress.inc();
                     })
@@ -140,28 +150,28 @@
                         return function(t) {
                             projection.rotate(r(t));
                             c.clearRect(0, 0, width, height);
-                            c.fillStyle = '#fff', c.lineWidth = 2, c.beginPath(), path(globe), c.fill();
-                            c.fillStyle = '#42affa', c.beginPath(), path(land), c.fill();
-                            c.fillStyle = '#f00', c.beginPath(), path(countries[i]), c.fill();
-                            c.strokeStyle = '#ccc', c.lineWidth = .5, c.beginPath(), path(borders), c.stroke();
-                            c.strokeStyle = '#ccc', c.lineWidth = 2, c.beginPath(), path(globe), c.stroke();
+                            c.fillStyle = '#d3edff', c.lineWidth = 2, c.beginPath(), path(globe), c.fill();
+                            c.fillStyle = '#11a022', c.beginPath(), path(land), c.fill();
+                            c.fillStyle = '#ffca00', c.beginPath(), path(countries[i]), c.fill();
+                            c.strokeStyle = '#f2f2f2', c.lineWidth = .5, c.beginPath(), path(borders), c.stroke();
+                            c.strokeStyle = '#f2f2f2', c.lineWidth = 2, c.beginPath(), path(globe), c.stroke();
                         };
                         NProgress.inc();
                     })
                     .transition()
-                    .each('end', transition);
+                    .each('end', transition_fct);
                 setTimeout(NProgress.done, duration_of_animation);
             };
 
-            transition();
+            transition_fct();
 
             function goto(j) {
-                updatetext(legend, comment, countries, nextIndex(j, nb));
+                i = nextIndex(j, nb);
+                updatetext(legend, comment, countries, i);
             };
 
             function previous() {
-                // goto(i - 1);
-                transition(1);
+                transition_fct(-1);
             };
 
             names.forEach(function(x) {
@@ -169,11 +179,11 @@
                     .append("a")
                     .attr("href", "#")
                     .attr("title", "#" + x.number + '/' + nb + ' : ' + x.comment)
+                    .attr("id", x.number)
                     .text(x.name);
                 li[0][0].onclick = function() {
-                    // goto(x.number - 1);
-                    transition(1);
-                    // previous();
+                    goto(x.number - 2);
+                    transition_fct(1);
                 };
             });
 
@@ -183,18 +193,18 @@
                     "This « World-Tour Timeline » page has the following keyboard shortcuts:" +
                     "\n - 'h' or '?' : for this help window." +
                     "\n - 'left' or 'p' : previous country." +
-                    "\n - 'right' or 'n' or 'space' or 'enter' : next country." +
+                    "\n - 'right' or 'n' or 'enter' : next country." +
                     "\n - 'f' : full-screen mode." +
                     "\n\nThis is a free and open-source software, see https://github.com/Naereen/world-tour-timeline/ for more details." +
                     "\nBuilt with ♥ by Lilian Besson (@Naereen), © 2017. MIT License."
                 );
             });
-            Mousetrap.bind(['space', 'enter', 'right', 'n', 'N'], transition);
+            Mousetrap.bind(['enter', 'right', 'n', 'N'], transition_fct);
             Mousetrap.bind(['left', 'p', 'P'], previous);
             Mousetrap.bind(['f', 'F'], toggleFullScreen);
 
             container.parentElement.querySelector('#previous').onclick = previous;
-            container.parentElement.querySelector('#transition').onclick = transition;
+            container.parentElement.querySelector('#transition').onclick = transition_fct;
         };
 
         d3.select(self.frameElement).style('height', height + 'px');
@@ -220,13 +230,19 @@
     </script>
     <p id="thanks">
         <span style="font-style: normal;">
-            Press 'space' to go to the next country, 'left' or 'p' to go to the previous one.
+            Press
+                '<code>right</code>' or '<code>n</code>' to go to the next country,
+                '<code>left</code>' or '<code>p</code>' to go to the previous one.
         </span>
         <br>
         <a class="arrow" id="previous" href="#" title="Previous country">←</a>
-        <span style="color: red;">Still experimental! <a href="https://github.com/Naereen/world-tour-timeline/commits/master">Currently in active progress...</a></span>
+        <span style="color: red;">
+            Still experimental!
+            <!-- <a href="https://github.com/Naereen/world-tour-timeline/commits/master">Currently in active progress...</a> -->
+            <a href="https://github.com/Naereen/world-tour-timeline/issues/new">Notify me of any bug please!</a>
+        </span>
         <a class="arrow" id="transition" href="#" title="Next country">→</a>
-        <br> 🔨 Made by <a href="https://GitHub.com/Naereen">Lilian Besson (@Naereen)</a>, ✨ publically released under the <a href="https://lbesson.mit-license.org/">MIT license</a>. Based on <a href="http://bl.ocks.org/mbostock/4183330">World Tour</a>        by <a href="http://bost.ocks.org/mike/">Mike Bostock</a>.
+        <br> 🔨 Made by <a href="https://GitHub.com/Naereen">Lilian Besson (@Naereen)</a>, ✨ open source (<a href="https://lbesson.mit-license.org/">MIT license</a>). Based on <a href="http://bl.ocks.org/mbostock/4183330">World Tour</a> by <a href="http://bost.ocks.org/mike/">Mike Bostock</a>.
     </p>
     <div id="timesheet"></div>
     <script type="text/javascript">

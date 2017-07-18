@@ -57,6 +57,20 @@ canvas {
     float: left;
     margin-top: 20vh;
     margin-left: -10vh;
+    line-height: 1.4em;
+}
+
+#list>li>a {
+    color: #11a022;
+    text-decoration: none;
+}
+
+.active {
+    font-weight: bold;
+}
+
+#list>li>a.active {
+    color: #ffca00;
 }
 
 .arrow {
