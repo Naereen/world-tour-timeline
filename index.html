@@ -29,16 +29,13 @@
 
     <link type="text/css" rel="stylesheet" href="css/style.css" />
     <link type="text/css" rel="stylesheet" media="screen and (min-width: 380px)" href="css/nprogress.css" />
-
-    <script type="text/javascript">
-        NProgress.start();
-    </script>
 </head>
 
 <body>
     <!-- <h1>World tour</h1> -->
     <h2 id="legend">Map is loading...</h2>
     <h2 id="comment">When, for how long?</h2>
+    <ol id="list"></ol>
     <noscript style="color: red;">
             Warning: javascript seems to be disabled...
             The map will not be available.
@@ -46,7 +43,7 @@
             Please enable javascript or download a more recent web browser to view this animation.
     </noscript>
     <script type="text/javascript">
-        NProgress.inc();
+        NProgress.start();
         var duration_of_animation = 2000;
         var size = Math.trunc(0.85 * Math.min(window.innerHeight, window.innerWidth));
         var width = size,
@@ -145,23 +142,44 @@
             };
             transition();
 
+            function previous() {
+                i = (i - 1) % nb;
+                i = ((i < 0) && (nb - 1)) || i;
+                updatetext(legend, comment, countries, i);
+            };
+
+            function goto(j) {
+                i = (j - 1) % nb;
+                i = ((i < 0) && (nb - 1)) || i;
+                updatetext(legend, comment, countries, i);
+            };
+
+            names.forEach(function(x) {
+                var li = d3.select("body").select("#list").append("li")
+                    .append("a")
+                    .attr("href", "#")
+                    .text(x.name);
+                li[0][0].onclick = function() {
+                    goto(x.number);
+                };
+            });
+
             // MouseTrap keyboard shortcuts (cf. http://craig.is/killing/mice)
-            Mousetrap.bind(["h", "?"], function() {
+            Mousetrap.bind(['h', '?'], function() {
                 window.alert(
                     "This « World-Tour Timeline » page has the following keyboard shortcuts:" +
                     "\n - h or ? : for this help window." +
                     "\n - left or p : previous country." +
                     "\n - right or n or space or enter : next country." +
-                    "\n\nThis is a free and open-source software, see https://github.com/Naereen/world-tour-timeline/ for more details and the latest version." +
-                    "\nBuilt with ♥ by Lilian Besson (Naereen)."
+                    "\n\nThis is a free and open-source software, see https://github.com/Naereen/world-tour-timeline/ for more details." +
+                    "\nBuilt with ♥ by Lilian Besson (@Naereen), © 2017. MIT License."
                 );
             });
             Mousetrap.bind(['space', 'enter', 'right', 'n'], transition);
-            Mousetrap.bind(['left', 'p'], function() {
-                i = (i - 1) % nb;
-                i = ((i < 0) && (nb - 1)) || i;
-                updatetext(legend, comment, countries, i);
-            });
+            Mousetrap.bind(['left', 'p'], previous);
+
+            container.parentElement.querySelector('#previous').onclick = previous;
+            container.parentElement.querySelector('#transition').onclick = transition;
         };
 
         d3.select(self.frameElement).style('height', height + 'px');
@@ -186,7 +204,11 @@
         });
     </script>
     <p id="thanks">
-        <span style="font-style: normal;">Press 'space' to go to the next country, 'left' or 'p' to go to the previous one.</span>
+        <span style="font-style: normal;">
+            <a id="previous" href="#" title="Previous country">←</a>
+            Press 'space' to go to the next country, 'left' or 'p' to go to the previous one.
+            <a id="transition" href="#" title="Next country">→</a>
+        </span>
         <br>
         <span style="color: red;">Still experimental! <a href="https://github.com/Naereen/world-tour-timeline/commits/master">Currently in active progress...</a></span>
         <br> 🔨 Made by <a href="https://GitHub.com/Naereen">Lilian Besson (@Naereen)</a>, ✨ publically released under the <a href="https://lbesson.mit-license.org/">MIT license</a>. Based on <a href="http://bl.ocks.org/mbostock/4183330">World Tour</a>        by <a href="http://bost.ocks.org/mike/">Mike Bostock</a>.

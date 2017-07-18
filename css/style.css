@@ -48,5 +48,14 @@ canvas {
     margin-right: auto;
     margin-left: auto;
     margin: auto;
-    width: 60%;
+    width: 70%;
+}
+
+#list {
+    font-size: 1.0em;
+    position: absolute;
+    float: left;
+    margin-top: 20vh;
+    margin-left: 2vh;
+    text-align: right;
 }
