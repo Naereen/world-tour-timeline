@@ -26,9 +26,12 @@
     <script type="text/javascript" src="js/mousetrap.min.js"></script>
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/nprogress.min.js"></script>
+    <script type="text/javascript" src="js/timesheet.min.js"></script>
+    <script type="text/javascript" src="js/toggleFullScreen.js"></script>
 
     <link type="text/css" rel="stylesheet" href="css/style.css" />
     <link type="text/css" rel="stylesheet" media="screen and (min-width: 380px)" href="css/nprogress.css" />
+    <link type="text/css" rel="stylesheet" href="css/timesheet.css" />
 </head>
 
 <body>
@@ -37,14 +40,14 @@
     <h2 id="comment">When, for how long?</h2>
     <ol id="list"></ol>
     <noscript style="color: red;">
-            Warning: javascript seems to be disabled...
-            The map will not be available.
+        Warning: javascript seems to be disabled...
+        The map will not be available.
 
-            Please enable javascript or download a more recent web browser to view this animation.
+        Please enable javascript or download a more recent web browser to view this animation.
     </noscript>
     <script type="text/javascript">
         NProgress.start();
-        var duration_of_animation = 2000;
+        var duration_of_animation = 3000;
         var size = Math.trunc(0.85 * Math.min(window.innerHeight, window.innerWidth));
         var width = size,
             height = size;
@@ -110,14 +113,23 @@
                 legend.innerHTML = (countries[i].name);
                 comment.innerHTML = '#' + (i + 1) + '/' + nb + ' : ' + (getData(countries[i]).comment);
             };
+
             NProgress.inc();
 
-            function transition() {
+            function nextIndex(i, nb) {
+                var j = i % nb;
+                return ((j < 0) && (nb - 1)) || j;
+            }
+
+            function transition(delta) {
+                if (typeof(delta) === 'undefined') {
+                    delta = 1;
+                };
                 NProgress.start();
                 d3.transition()
                     .duration(duration_of_animation)
                     .each('start', function() {
-                        while (!countries[i = (i + 1) % n]) {};
+                        while (!countries[i = (i + delta) % n]) {};
                         updatetext(legend, comment, countries, i);
                         NProgress.inc();
                     })
@@ -140,27 +152,28 @@
                     .each('end', transition);
                 setTimeout(NProgress.done, duration_of_animation);
             };
+
             transition();
 
-            function previous() {
-                i = (i - 1) % nb;
-                i = ((i < 0) && (nb - 1)) || i;
-                updatetext(legend, comment, countries, i);
+            function goto(j) {
+                updatetext(legend, comment, countries, nextIndex(j, nb));
             };
 
-            function goto(j) {
-                i = (j - 1) % nb;
-                i = ((i < 0) && (nb - 1)) || i;
-                updatetext(legend, comment, countries, i);
+            function previous() {
+                // goto(i - 1);
+                transition(1);
             };
 
             names.forEach(function(x) {
                 var li = d3.select("body").select("#list").append("li")
                     .append("a")
                     .attr("href", "#")
+                    .attr("title", "#" + x.number + '/' + nb + ' : ' + x.comment)
                     .text(x.name);
                 li[0][0].onclick = function() {
-                    goto(x.number);
+                    // goto(x.number - 1);
+                    transition(1);
+                    // previous();
                 };
             });
 
@@ -168,15 +181,17 @@
             Mousetrap.bind(['h', '?'], function() {
                 window.alert(
                     "This « World-Tour Timeline » page has the following keyboard shortcuts:" +
-                    "\n - h or ? : for this help window." +
-                    "\n - left or p : previous country." +
-                    "\n - right or n or space or enter : next country." +
+                    "\n - 'h' or '?' : for this help window." +
+                    "\n - 'left' or 'p' : previous country." +
+                    "\n - 'right' or 'n' or 'space' or 'enter' : next country." +
+                    "\n - 'f' : full-screen mode." +
                     "\n\nThis is a free and open-source software, see https://github.com/Naereen/world-tour-timeline/ for more details." +
                     "\nBuilt with ♥ by Lilian Besson (@Naereen), © 2017. MIT License."
                 );
             });
-            Mousetrap.bind(['space', 'enter', 'right', 'n'], transition);
-            Mousetrap.bind(['left', 'p'], previous);
+            Mousetrap.bind(['space', 'enter', 'right', 'n', 'N'], transition);
+            Mousetrap.bind(['left', 'p', 'P'], previous);
+            Mousetrap.bind(['f', 'F'], toggleFullScreen);
 
             container.parentElement.querySelector('#previous').onclick = previous;
             container.parentElement.querySelector('#transition').onclick = transition;
@@ -205,14 +220,25 @@
     </script>
     <p id="thanks">
         <span style="font-style: normal;">
-            <a id="previous" href="#" title="Previous country">←</a>
             Press 'space' to go to the next country, 'left' or 'p' to go to the previous one.
-            <a id="transition" href="#" title="Next country">→</a>
         </span>
         <br>
+        <a class="arrow" id="previous" href="#" title="Previous country">←</a>
         <span style="color: red;">Still experimental! <a href="https://github.com/Naereen/world-tour-timeline/commits/master">Currently in active progress...</a></span>
+        <a class="arrow" id="transition" href="#" title="Next country">→</a>
         <br> 🔨 Made by <a href="https://GitHub.com/Naereen">Lilian Besson (@Naereen)</a>, ✨ publically released under the <a href="https://lbesson.mit-license.org/">MIT license</a>. Based on <a href="http://bl.ocks.org/mbostock/4183330">World Tour</a>        by <a href="http://bost.ocks.org/mike/">Mike Bostock</a>.
     </p>
+    <div id="timesheet"></div>
+    <script type="text/javascript">
+        new Timesheet('timesheet', 2009, 2019, [
+            ['09/2009', '07/2011', 'Prep\' School at "Lycée Thiers", Marseille, France', 'default'],
+            ['09/2011', '08/2016', 'Student at "ENS de Cachan", France', 'default'],
+            ['06/2013', '08/2013', 'Internship in London, UK', 'ipsum'],
+            ['07/2014', '05/2015', 'Teaching assistant in Hyderabad, India', 'lorem'],
+            ['03/2016', '08/2016', 'Internship in Lausanne, Switzerland', 'ipsum'],
+            ['09/2016', '08/2019', 'Ph.D. in Rennes and Lille, France', 'dolor']
+        ]);
+    </script>
 </body>
 
 </html>

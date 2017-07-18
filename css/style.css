@@ -1,11 +1,11 @@
 /*
-  https://naereen.github.io/world-tour-timeline/
-  MIT License, by Lilian Besson (@Naereen)
-  https://github.com/Naereen/world-tour-timeline/
+    https://naereen.github.io/world-tour-timeline/
+    MIT License, by Lilian Besson (@Naereen)
+    https://github.com/Naereen/world-tour-timeline/
 */
 
 
-/*@import url('//fonts.googleapis.com/css?family=Ubuntu');*/
+/* @import url('//fonts.googleapis.com/css?family=Ubuntu'); */
 
 body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -41,7 +41,7 @@ canvas {
 }
 
 #thanks {
-    font-size: 1.1em;
+    font-size: 1.2em;
     font-style: italic;
     position: absolute;
     bottom: 1vh;
@@ -56,6 +56,21 @@ canvas {
     position: absolute;
     float: left;
     margin-top: 20vh;
-    margin-left: 2vh;
-    text-align: right;
+    margin-left: -10vh;
+}
+
+.arrow {
+    position: relative;
+    bottom: 37vh;
+    font-size: 6em;
+    text-decoration: none;
+    vertical-align: bottom;
+}
+
+#previous {
+    left: -200px;
+}
+
+#transition {
+    right: -200px;
 }
