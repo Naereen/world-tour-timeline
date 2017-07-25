@@ -1,0 +1,260 @@
+<!--
+    https://naereen.github.io/world-tour-timeline/
+    MIT License, by Lilian Besson (@Naereen)
+    https://github.com/Naereen/world-tour-timeline/
+-->
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="author" content="Lilian Besson (@Naereen)" />
+    <meta name="description" content="Petit tour des pays visités" />
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <title>Petit tour des pays visités</title>
+
+    <!--[if lt IE 9]>
+		    <script src="js/html5shiv.js"></script>
+		<![endif]-->
+    <script type="text/javascript" src="js/d3/d3.v3.min.js"></script>
+    <script type="text/javascript" src="js/d3/queue.v1.min.js"></script>
+    <script type="text/javascript" src="js/d3/topojson.v1.min.js"></script>
+    <script type="text/javascript" src="js/mousetrap.min.js"></script>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/nprogress.min.js"></script>
+    <script type="text/javascript" src="js/timesheet.min.js"></script>
+    <script type="text/javascript" src="js/toggleFullScreen.js"></script>
+
+    <link type="text/css" rel="stylesheet" href="css/style.css" />
+    <link type="text/css" rel="stylesheet" media="screen and (min-width: 380px)" href="css/nprogress.css" />
+    <link type="text/css" rel="stylesheet" href="css/timesheet.css" />
+</head>
+
+<body>
+    <!-- <h1>Tour du monde</h1> -->
+    <h2 id="legend">La carte se charge...</h2>
+    <h2 id="comment">Quand, pour combien de temps ?</h2>
+    <ol id="list"></ol>
+    <noscript style="color: red;">
+        Attention : javascript semble désactivé...
+        La carte ne va pas marcher.
+
+        Merci d'activer javascript ou de télécharger un navigateur web plus récent pour voir cette animation.
+    </noscript>
+    <script type="text/javascript">
+        NProgress.start();
+        var duration_of_animation = 3000;
+        var size = Math.trunc(0.85 * Math.min(window.innerHeight, window.innerWidth));
+        var width = size,
+            height = size;
+
+        var canvas = d3.select("body").append("canvas")
+            .attr("width", width)
+            .attr("height", height);
+
+        var projection = d3.geo.orthographic()
+            .translate([width / 2, height / 2])
+            .scale(width / 2 - 50)
+            .clipAngle(90)
+            .precision(0.6);
+
+        var container = canvas.node();
+        var c = container.getContext('2d');
+
+        var path = d3.geo.path()
+            .projection(projection)
+            .context(c);
+
+        var legend = container.parentElement.querySelector('#legend');
+        var comment = container.parentElement.querySelector('#comment');
+        NProgress.inc();
+        queue()
+            .defer(d3.json, 'data/world-110m.json')
+            .defer(d3.csv, 'data/mes-pays-en-ordre.csv')
+            .await(ready);
+
+        function ready(error, world, names) {
+            if (error) throw error;
+
+            var globe = {
+                    type: 'Sphere'
+                },
+                land = topojson.feature(world, world.objects.land),
+                countries = topojson.feature(world, world.objects.countries).features,
+                borders = topojson.mesh(world, world.objects.countries, function(a, b) {
+                    return a !== b;
+                }),
+                i = -1,
+                n = countries.length;
+
+            function getData(a) {
+                return names.find(function(x) {
+                    return (a.name == x.name);
+                });
+            };
+
+            countries = countries.filter(function(d) {
+                return names.some(function(x) {
+                    if (d.id == x.id) return d.name = x.name;
+                });
+            }).sort(function(a, b) {
+                var my_a = getData(a);
+                var my_b = getData(b);
+                return parseInt(my_a.number) - parseInt(my_b.number);
+            });
+
+            var nb = countries.length;
+            var lastli = undefined;
+
+            function updatetext(legend, comment, countries, i) {
+                var data = getData(countries[i]);
+                legend.innerHTML = data.name;
+                comment.innerHTML = '#' + (i + 1) + '/' + nb + ' : ' + data.comment;
+
+                if ((typeof(lastli) !== 'undefined')) {
+                    lastli.removeClass("active");
+                };
+                var li = $("#" + data.number);
+                li.addClass("active");
+                lastli = li;
+            };
+
+            NProgress.inc();
+
+            function nextIndex(k, nb) {
+                var j = k % nb;
+                return ((j < 0) && (nb - 1)) || j;
+            }
+
+            function transition_fct(delta) {
+                if ((typeof(delta) === 'undefined') || (typeof(delta) !== 'number')) {
+                    delta = 1;
+                };
+                console.log("delta =", delta); // DEBUG
+                NProgress.start();
+                d3.transition()
+                    .duration(duration_of_animation)
+                    .each('start', function() {
+                        while (!countries[i = nextIndex(i + delta, n)]) {};
+                        updatetext(legend, comment, countries, i);
+                        NProgress.inc();
+                    })
+                    .tween('rotate', function() {
+                        var p = d3.geo.centroid(countries[i]),
+                            r = d3.interpolate(projection.rotate(), [-p[0], -p[1]]);
+                        NProgress.inc();
+                        return function(t) {
+                            projection.rotate(r(t));
+                            c.clearRect(0, 0, width, height);
+                            c.fillStyle = '#d3edff', c.lineWidth = 2, c.beginPath(), path(globe), c.fill();
+                            c.fillStyle = '#11a022', c.beginPath(), path(land), c.fill();
+                            c.fillStyle = '#ffca00', c.beginPath(), path(countries[i]), c.fill();
+                            c.strokeStyle = '#f2f2f2', c.lineWidth = .5, c.beginPath(), path(borders), c.stroke();
+                            c.strokeStyle = '#f2f2f2', c.lineWidth = 2, c.beginPath(), path(globe), c.stroke();
+                        };
+                        NProgress.inc();
+                    })
+                    .transition()
+                    .each('end', transition_fct);
+                setTimeout(NProgress.done, duration_of_animation);
+            };
+
+            transition_fct();
+
+            function goto(j) {
+                i = nextIndex(j, nb);
+                updatetext(legend, comment, countries, i);
+            };
+
+            function previous() {
+                transition_fct(-1);
+            };
+
+            names.forEach(function(x) {
+                var li = d3.select("body").select("#list").append("li")
+                    .append("a")
+                    .attr("href", "#")
+                    .attr("title", "#" + x.number + '/' + nb + ' : ' + x.comment)
+                    .attr("id", x.number)
+                    .text(x.name);
+                li[0][0].onclick = function() {
+                    goto(x.number - 2);
+                    transition_fct(1);
+                };
+            });
+
+            // MouseTrap keyboard shortcuts (cf. http://craig.is/killing/mice)
+            Mousetrap.bind(['h', '?'], function() {
+                window.alert(
+                    "Cette page « Tour du monde » a les raccourcis clavier suivant :" +
+                    "\n - 'h' ou '?' : pour ce message d'aide." +
+                    "\n - 'left' ou 'p' : pays précédent." +
+                    "\n - 'right' ou 'n' ou 'enter' : pays suivant." +
+                    "\n - 'f' : passer en plein écran." +
+                    "\n\nCeci est un logiciel libre et open-source, aller voir https://github.com/Naereen/world-tour-timeline/ pour les détails." +
+                    "\nFait avec ♥ par Lilian Besson (@Naereen), © 2017. Licence MIT."
+                );
+            });
+            Mousetrap.bind(['enter', 'right', 'n', 'N'], transition_fct);
+            Mousetrap.bind(['left', 'p', 'P'], previous);
+            Mousetrap.bind(['f', 'F'], toggleFullScreen);
+
+            container.parentElement.querySelector('#previous').onclick = previous;
+            container.parentElement.querySelector('#transition').onclick = transition_fct;
+        };
+
+        d3.select(self.frameElement).style('height', height + 'px');
+        // Done
+
+        $(window).load(function() {
+            NProgress.done();
+            // Google Analytics
+            (function(i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r;
+                i[r] = i[r] || function() {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date();
+                a = s.createElement(o),
+                    m = s.getElementsByTagName(o)[0];
+                a.async = 1;
+                a.src = g;
+                m.parentNode.insertBefore(a, m)
+            })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+            ga('create', 'UA-38514290-17', 'github.io');
+            ga('send', 'pageview');
+        });
+    </script>
+    <p id="thanks">
+        <span style="font-style: normal;">
+            Appuyer
+                '<code>droite</code>' ou '<code>n</code>' pour aller au pays précédent,
+                '<code>gauche</code>' ou '<code>p</code>' pour aller au pays suivant.
+        </span>
+        <br>
+        <a class="arrow" id="previous" href="#" title="Previous country">←</a>
+        <span style="color: red;">
+            Encore expérimental !
+            <a href="https://github.com/Naereen/world-tour-timeline/commits/master">Actuellement en fabrication...</a>
+            <!-- <a href="https://github.com/Naereen/world-tour-timeline/issues/new">Merci de me signaler tout problème !</a> -->
+        </span>
+        <a class="arrow" id="transition" href="#" title="Next country">→</a>
+        <br> 🔨 Fait par <a href="https://GitHub.com/Naereen">Lilian Besson (@Naereen)</a>, ✨ libre (<a href="https://lbesson.mit-license.org/">MIT license</a>). Basé sur <a href="http://bl.ocks.org/mbostock/4183330">World Tour</a> par <a href="http://bost.ocks.org/mike/">Mike Bostock</a>.
+    </p>
+    <div id="timesheet"></div>
+    <script type="text/javascript">
+        new Timesheet('timesheet', 2009, 2019, [
+            ['09/2009', '07/2011', 'Classe Préparatoire au "Lycée Thiers", Marseille, France', 'default'],
+            ['09/2011', '08/2016', 'Élève normalien à l\'"ENS de Cachan", France', 'default'],
+            ['06/2013', '08/2013', 'Stage de recherche à Londres, RU', 'ipsum'],
+            ['07/2014', '05/2015', 'Professeur à Mahindra Ecole Centrale à Hyderabad, Inde', 'lorem'],
+            ['03/2016', '08/2016', 'Stage de recherche à Lausanne, Suisse', 'ipsum'],
+            ['09/2016', '08/2019', 'Thèse de doctorat à Rennes et Lille, France', 'dolor']
+        ]);
+    </script>
+</body>
+
+</html>

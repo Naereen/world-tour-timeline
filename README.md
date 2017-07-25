@@ -1,6 +1,8 @@
 # World Tour with a Timeline
 
-> See [the webpage](https://naereen.github.io/world-tour-timeline/).
+> :us: & :gb: See [the webpage](https://naereen.github.io/world-tour-timeline/).
+
+> :fr: Il y a aussi la même page, mais traduite en français : [https://naereen.github.io/world-tour-timeline/index_fr.html](index_fr.html)
 
 ----
 
