@@ -2,12 +2,12 @@
 
 > :us: & :gb: See [the webpage](https://naereen.github.io/world-tour-timeline/).
 
-> :fr: Il y a aussi la même page, mais traduite en français : [https://naereen.github.io/world-tour-timeline/index_fr.html](index_fr.html)
+> :fr: Il y a aussi la même page, mais traduite en français : [index_fr.html](https://naereen.github.io/world-tour-timeline/index_fr.html)
 
 ----
 
 ## About
-This webpage is a simple try to show a visualization of a world tour associated with a timeline, for each country I have ever been to.
+This webpage is a simple experiment to show a visualization of a world tour, associated with a timeline, for each country I have ever been to.
 
 I am not a very experienced traveler, but still I found this experiment to be interesting...
 
