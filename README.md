@@ -9,10 +9,10 @@
 ## About
 This webpage is a simple try to show a visualization of a world tour associated with a timeline, for each country I have ever been to.
 
-I am not a very experienced traveler, but still I found this experiment to be interesting.
+I am not a very experienced traveler, but still I found this experiment to be interesting...
 
 - Based on <a href="http://bl.ocks.org/mbostock/4183330">World Tour</a> by <a href="http://bost.ocks.org/mike/">Mike Bostock</a>.
-- Made by <a href="https://GitHub.com/Naereen">Lilian Besson (@Naereen)</a>,
+- Written manually by <a href="https://GitHub.com/Naereen">Lilian Besson (@Naereen)</a>,
 - Publicly released under the <a href="https://lbesson.mit-license.org/">MIT license</a>.
 
 ## :scroll: License ? [![GitHub license](https://img.shields.io/github/license/Naereen/world-tour-timeline.svg)](https://github.com/Naereen/world-tour-timeline/blob/master/LICENSE)
